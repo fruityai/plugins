@@ -74,28 +74,30 @@ const API_KEY = Deno.env.get("API_KEY");
 The context object is passed to your function and provides methods for interacting with the Fruity.ai chat UI and building chat conversations.
 Here are the methods available in the context object:
 
-- updateStatus(status): This method is used to show a status message or progress in the chat in markdown format. It overrides any existing message.
+- `updateStatus(status)`: This method is used to show a status message or progress in the chat in markdown format. It overrides any existing message.
 
 ```javascript
 await context.updateStatus("Loading data from API...");
 ```
 
-- set(key, value): This method is used to save a user setting value for a specific chat assistant and the current user. The key is a string that represents the name of the value you want to save. The value can be in JSON format.
+- `set(key, value)`: This method is used to save a user setting value for a specific chat assistant and the current user. The key is a string that represents the name of the value you want to save. The value can be in JSON format.
 
 ```javascript
 await context.set("userLocation", { lat: 1.0, lon: 1.0 });
 ```
 
-- get(key): This method is used to retrieve a value by key. The key is a string that represents the name of the value you want to retrieve.
+- `get(key)`: This method is used to retrieve a value by key. The key is a string that represents the name of the value you want to retrieve.
 
 ```javascript
 const { lat, lon } = await context.get("userLocation");
 ```
 
-- addSystemMessage(message): This method is used to add a system message to the chat. The message is an instance of the SystemMessage class.
+- `addSystemMessage(message)`: This method is used to add a system message to the chat. The message is an instance of the SystemMessage class.
 
 ```javascript
 await context.addSystemMessage("Always use metric system");
 ```
 
-- getUserLocation(): This method is used to get the location of the user as latitude and longitude from the browser.
+- `getUserLocation()`: This method is used to get the location of the user as latitude and longitude from the browser.
+
+If you don't see the functionality you need in `Context`, please email us at hey@fruity.ai. We would love to hear from you.
