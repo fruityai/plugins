@@ -1,4 +1,4 @@
-export function registerFunctions() {
+export function defineFunctions() {
   return [
     {
       name: "sayHello",

@@ -1,7 +1,7 @@
 const API_KEY = Deno.env.get("API_KEY");
 const BASE_URL = "https://api.bland.ai";
 
-export function registerFunctions() {
+export function defineFunctions() {
   return [
     {
       name: "makePhoneCall",

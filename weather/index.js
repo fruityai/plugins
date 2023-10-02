@@ -1,7 +1,8 @@
 const API_KEY = Deno.env.get("API_KEY");
 const BASE_URL = "http://api.openweathermap.org/data/2.5/";
+const DEFAULT_UNITS = "imperial";
 
-export function registerFunctions() {
+function defineFunctions() {
   return [
     {
       name: "getCurrentWeatherByLatLon",
@@ -9,21 +10,13 @@ export function registerFunctions() {
       parameters: {
         type: "object",
         properties: {
-          lat: {
-            type: "number",
-            description: "Latitude",
-          },
-          lon: {
-            type: "number",
-            description: "Longitude",
-          },
           units: {
             type: "string",
             description:
-              "Units for temperature. 'metric' for Celsius, 'imperial' for Fahrenheit",
+              "Units for temperature. 'metric' for Celsius, 'imperial' for Fahrenheit. Only provide this parameter when user asked to change units.",
           },
         },
-        required: ["lat", "lon", "units"],
+        required: [],
       },
     },
     {
@@ -32,47 +25,82 @@ export function registerFunctions() {
       parameters: {
         type: "object",
         properties: {
-          lat: {
-            type: "number",
-            description: "Latitude",
-          },
-          lon: {
-            type: "number",
-            description: "Longitude",
-          },
           units: {
             type: "string",
             description:
-              "Units for temperature. 'metric' for Celsius, 'imperial' for Fahrenheit",
+              "Units for temperature. 'metric' for Celsius, 'imperial' for Fahrenheit. Only provide this parameter when user asked to change units.",
           },
         },
-        required: ["lat", "lon", "units"],
+        required: [],
       },
     },
   ];
 }
 
-export async function getCurrentWeatherByLatLon(context, { lat, lon, units }) {
+async function getCurrentWeatherByLatLon(context, { units } = {}) {
   context.updateStatus("Checking current weather...");
-  const url = `${BASE_URL}weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${units}`;
+  if (!units) {
+    units = (await context.get("units")) || DEFAULT_UNITS;
+  } else {
+    context.set("units", units);
+  }
+
   try {
+    const { latitude, longitude } = await context.getUserLocation();
+    const url = `${BASE_URL}weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=${units}`;
     const response = await fetch(url);
     const data = await response.json();
-    return { result: data, status: "continue" };
+    const essentialData = {
+      city: data.name,
+      description: data.weather[0].description,
+      temperature: data.main.temp,
+      feels_like: data.main.feels_like,
+      temp_min: data.main.temp_min,
+      temp_max: data.main.temp_max,
+    };
+    return { result: essentialData, status: "continue" };
   } catch (error) {
-    console.log(error);
     context.updateStatus({ error: "Error fetching current weather" });
   }
 }
 
-export async function getFiveDayForecastByLatLon(context, { lat, lon, units }) {
+async function getFiveDayForecastByLatLon(context, { units } = {}) {
   context.updateStatus("Checking weather forecast...");
-  const url = `${BASE_URL}forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${units}`;
+  if (!units) {
+    units = (await context.get("units")) || DEFAULT_UNITS;
+  } else {
+    context.set("units", units);
+  }
+
   try {
+    const { latitude, longitude } = await context.getUserLocation();
+    const url = `${BASE_URL}forecast?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=${units}`;
     const response = await fetch(url);
     const data = await response.json();
-    return { result: data, status: "continue" };
+    let essentialData = {
+      city: data.city.name,
+      list: data.list.map((forecast) => {
+        return {
+          datetime: forecast.dt_txt,
+          temperature: forecast.main.temp,
+          feels_like: forecast.main.feels_like,
+          min_temp: forecast.main.temp_min,
+          max_temp: forecast.main.temp_max,
+          weather_main: forecast.weather[0].main,
+          weather_description: forecast.weather[0].description,
+          wind_speed: forecast.wind.speed,
+        };
+      }),
+    };
+
+    return { result: essentialData, status: "continue" };
   } catch (error) {
     context.updateStatus({ error: "Error fetching 5-day forecast" });
   }
 }
+
+export {
+  defineFunctions,
+  getCurrentWeatherByLatLon,
+  getFiveDayForecastByLatLon,
+};
