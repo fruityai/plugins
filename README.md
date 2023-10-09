@@ -98,6 +98,10 @@ const { lat, lon } = await context.get("userLocation");
 await context.addSystemMessage("Always use metric system");
 ```
 
+- `addDocuments(docs)`: This method is used to add documents to the chat conversation. The documents are instances of Documents in Langchain library. OpenAI vector embeddings are automatically created for these documents for later use in searching. The `docs` parameter is an array of documents.
+
+- `getRelevantDocuments({ query, limit })`: This method is used to retrieve relevant documents based on a query. The `query` parameter is a string representing the search query. The `limit` parameter is an integer specifying the maximum number of documents to return. The method returns an array of documents.
+
 - `getUserLocation()`: This method is used to get the location of the user as latitude and longitude from the browser.
 
 If you don't see the functionality you need in `Context`, please email us at hey@fruity.ai. We would love to hear from you.
