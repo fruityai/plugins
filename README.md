@@ -3,6 +3,16 @@
 Each plugin you create for Fruity.ai is essentially a set of functions.
 These functions are defined in a single module file, which you will upload to the Fruity.ai app.
 Plugins run in [Deno](https://deno.land/), a secure runtime for JavaScript and TypeScript. This means you can use modern JavaScript features and import modules directly from URLs.
+Plugins can be created in JavaScript or TypeScript.
+
+Here are few examples of plugins:
+
+[Checklist Plugin](checklist/index.js)
+[Fetch URL](fetch_url/index.js)
+[Giphy](giphy/index.js)
+[Weather](weather/index.js)
+
+See more above
 
 ## Defining Functions
 
@@ -81,6 +91,7 @@ await context.updateStatus("Loading data from API...");
 ```
 
 - `set(key, value)`: This method is used to save a user setting value for a specific chat assistant and the current user. The key is a string that represents the name of the value you want to save. The value can be in JSON format.
+  The setting is saved per Assistant/Plugin for current User. So when the user is chatting back to the same assistant in a new chat, the value can be retrieved from previous chat conversations.
 
 ```javascript
 await context.set("userLocation", { lat: 1.0, lon: 1.0 });
@@ -103,5 +114,16 @@ await context.addSystemMessage("Always use metric system");
 - `getRelevantDocuments({ query, limit })`: This method is used to retrieve relevant documents based on a query. The `query` parameter is a string representing the search query. The `limit` parameter is an integer specifying the maximum number of documents to return. The method returns an array of documents.
 
 - `getUserLocation()`: This method is used to get the location of the user as latitude and longitude from the browser.
+
+## Initialize function
+
+- `initialize()`: This special function, if defined in plugin, will be executed first when a new chat is started.
+  It's a great place to add some special instructions or system messages. Here's an example:
+
+```javascript
+export async function initialize(context) {
+  await context.addSystemMessage("Use this database schema: {...}");
+}
+```
 
 If you don't see the functionality you need in `Context`, please email us at hey@fruity.ai. We would love to hear from you.
