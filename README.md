@@ -8,8 +8,11 @@ Plugins can be created in JavaScript or TypeScript.
 Here are few examples of plugins:
 
 [Checklist Plugin](checklist/index.js)
+
 [Fetch URL](fetch_url/index.js)
+
 [Giphy](giphy/index.js)
+
 [Weather](weather/index.js)
 
 See more above
@@ -126,4 +129,6 @@ export async function initialize(context) {
 }
 ```
 
-If you don't see the functionality you need in `Context`, please email us at hey@fruity.ai. We would love to hear from you.
+If you don't see the functionality you need in `Context`, please email us at hey@fruity.ai.
+
+We would love to hear from you!
