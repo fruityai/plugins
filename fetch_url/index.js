@@ -1,6 +1,6 @@
-import { CheerioWebBaseLoader } from "https://esm.sh/langchain/document_loaders/web/cheerio";
 import { RecursiveCharacterTextSplitter } from "https://esm.sh/langchain/text_splitter";
-import { HtmlToTextTransformer } from "https://esm.sh/langchain/document_transformers/html_to_text";
+import { DOMParser } from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
+import { Readability } from "npm:@mozilla/readability";
 
 export function defineFunctions() {
   return [
@@ -28,8 +28,9 @@ export function defineFunctions() {
 export async function fetchAndSearchUrl(context, { url, query }) {
   try {
     context.updateStatus(`Fetching URL: ${url}`);
-
-    const langchainDocs = await fetchAndTranformToDocuments(url);
+    const urlContent = await fetchUrlContent(url);
+    const splitter = new RecursiveCharacterTextSplitter();
+    const langchainDocs = await splitter.createDocuments([urlContent]);
     await context.addDocuments(langchainDocs);
     const relevantDocuments = await context.getRelevantDocuments({
       query,
@@ -41,16 +42,15 @@ export async function fetchAndSearchUrl(context, { url, query }) {
       status: "continue",
     };
   } catch (error) {
-    return { error: error.message || error, status: "done" };
+    return { error: error.message || error };
   }
 }
 
-async function fetchAndTranformToDocuments(url) {
-  const loader = new CheerioWebBaseLoader(url);
-  const docs = await loader.load();
-  const splitter = RecursiveCharacterTextSplitter.fromLanguage("html");
-  const transformer = new HtmlToTextTransformer();
-  const sequence = splitter.pipe(transformer);
+async function fetchUrlContent(url) {
+  const response = await fetch(url);
+  const html = await response.text();
+  const document = new DOMParser(html).parseFromString(html, "text/html");
+  const reader = new Readability(document);
 
-  return await sequence.invoke(docs);
+  return reader.parse()?.textContent;
 }
