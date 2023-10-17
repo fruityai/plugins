@@ -20,6 +20,10 @@ export function defineFunctions() {
             type: "string",
             description: "The search query",
           },
+          offset: {
+            type: "integer",
+            description: `The search results offset, must be a multiple of ${GOOGLE_SEARCH_RESULT_LIMIT}`,
+          },
         },
         required: ["query"],
       },
@@ -27,10 +31,16 @@ export function defineFunctions() {
   ];
 }
 
-export async function googleSearch(context, { query }) {
+export async function initialize(context) {
+  await context.addSystemMessage(
+    "After performing search, if answer wasn't found then use offset to get more results. Don't stop until you find a valid answer."
+  );
+}
+
+export async function googleSearch(context, { query, offset = 0 }) {
   try {
     context.updateStatus(`Searching Google for "${query}"...`);
-    const searchResults = await fetchGoogleSearchResults(query);
+    const searchResults = await fetchGoogleSearchResults(query, offset);
     if (!searchResults) {
       return { error: "No results found" };
     }
@@ -55,9 +65,9 @@ export async function googleSearch(context, { query }) {
   }
 }
 
-async function fetchGoogleSearchResults(query) {
+async function fetchGoogleSearchResults(query, offset) {
   const res = await fetch(
-    `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX_ID}&q=${query}&num=${GOOGLE_SEARCH_RESULT_LIMIT}`
+    `https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX_ID}&q=${query}&num=${GOOGLE_SEARCH_RESULT_LIMIT}&start=${offset}`
   );
   const data = await res.json();
   return data.items;

@@ -68,7 +68,7 @@ export async function initialize(context) {
 
   if (result) {
     await context.addSystemMessage(
-      `\nHere are all items in the checklist:\n${JSON.stringify(result)}`
+      `Here are all items in the checklist:\n${JSON.stringify(result)}`
     );
   }
 }
