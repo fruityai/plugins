@@ -98,6 +98,8 @@ await context.updateStatus("Loading data from API...");
 
 - `openModal({ title, content, button })`: This method is used to open a modal dialog in the chat. The `title` parameter is a string representing the title of the modal. The `content` parameter is a string representing the content of the modal. The `button` parameter (optional) is an object with `label` and `link` properties representing the label and link of the button in the modal.
 
+![Modal](https://github.com/fruityai/plugins/blob/main/screenshots/modal.png)
+
 ```javascript
 context.openModal({
   title: "Account Login",
