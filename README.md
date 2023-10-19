@@ -92,8 +92,10 @@ Here are the methods available in the context object:
 
 - `updateStatus(status)`: This method is used to show a status message or progress in the chat in markdown format. It overrides any existing message.
 
+![Modal](https://github.com/fruityai/plugins/blob/master/screenshots/status.png)
+
 ```javascript
-await context.updateStatus("Loading data from API...");
+await context.updateStatus("Checking websites: https://www.google.com\n");
 ```
 
 - `openModal({ title, content, button })`: This method is used to open a modal dialog in the chat. The `title` parameter is a string representing the title of the modal. The `content` parameter is a string representing the content of the modal. The `button` parameter (optional) is an object with `label` and `link` properties representing the label and link of the button in the modal.
