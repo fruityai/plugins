@@ -1,7 +1,10 @@
 # Creating Plugins for Fruity.AI
 
-Each plugin you create for Fruity.ai is essentially a set of functions.
-These functions are defined in a single module file, which you will upload to the Fruity.ai app.
+Fruity.AI plugins are easy to create and deploy and allow to create more interactive chat apps.
+These plugins can request to show modals, provide real time feedback and more!
+
+Each plugin you create for Fruity.ai is essentially a set of functions defined in JS file.
+These functions are defined in a single module file, which you will upload to the Fruity.ai app. No hosting required!
 Plugins run in [Deno](https://deno.land/), a secure runtime for JavaScript and TypeScript. This means you can use modern JavaScript features and import modules directly from URLs.
 Plugins can be created in JavaScript or TypeScript.
 
@@ -15,7 +18,7 @@ Here are few examples of plugins:
 
 [Weather](weather/index.js)
 
-See more above
+See more above.
 
 ## Defining Functions
 
@@ -91,6 +94,16 @@ Here are the methods available in the context object:
 
 ```javascript
 await context.updateStatus("Loading data from API...");
+```
+
+- `openModal({ title, content, button })`: This method is used to open a modal dialog in the chat. The `title` parameter is a string representing the title of the modal. The `content` parameter is a string representing the content of the modal. The `button` parameter (optional) is an object with `label` and `link` properties representing the label and link of the button in the modal.
+
+```javascript
+context.openModal({
+  title: "Account Login",
+  content: "Please login to your email account to continue.",
+  button: { label: "Login", link: "https://google.com" },
+});
 ```
 
 - `set(key, value)`: This method is used to save a user setting value for a specific chat assistant and the current user. The key is a string that represents the name of the value you want to save. The value can be in JSON format.
