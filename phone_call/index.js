@@ -1,5 +1,6 @@
 const API_KEY = Deno.env.get("API_KEY");
 const BASE_URL = "https://api.bland.ai";
+const TRANSCRIPT_POLLING_INTERVAL = 500;
 
 export function defineFunctions() {
   return [
@@ -11,11 +12,13 @@ export function defineFunctions() {
         properties: {
           phone_number: {
             type: "string",
-            description: "Phone number to call",
+            description:
+              "Phone number to call, must be a valid numeric phone number",
           },
           task: {
             type: "string",
-            description: "Task description for the call",
+            description:
+              "Task description for the call. Include all the details for the task: Who is calling, purpose of the call, who is this regarding etc. and any other details that might be relevant.",
           },
           request_data: {
             type: "object",
@@ -27,20 +30,6 @@ export function defineFunctions() {
         required: ["phone_number", "task"],
       },
     },
-    {
-      name: "getPhoneCallTranscript",
-      description: "Get the transcript of a call",
-      parameters: {
-        type: "object",
-        properties: {
-          callId: {
-            type: "string",
-            description: "ID of the call",
-          },
-        },
-        required: ["callId"],
-      },
-    },
   ];
 }
 
@@ -50,8 +39,9 @@ export async function makePhoneCall(context, params) {
     Authorization: API_KEY,
   };
 
-  params["voice_id"] = 2;
-  params["reduce_latency"] = true;
+  params["voice_id"] = 0;
+  params["reduce_latency"] = false;
+  params["amd"] = true;
   if (params["request_data"]) {
     try {
       const parsedJson = JSON.parse(params["request_data"]);
@@ -74,13 +64,10 @@ export async function makePhoneCall(context, params) {
       if (data.status == "success") {
         context.updateStatus(`Call started successfully.`);
         const callId = data.call_id;
-
-        return {
-          result: `Call started successfully. If user asks for transcript use this call ID to get transcript: '${callId}'`,
-          status: "continue",
-        };
+        const transcript = await getPhoneCallTranscript(context, { callId });
+        return { result: `Here is the call transcript:\n\n${transcript}` };
       } else {
-        return { result: "Failed to make call", status: "continue" };
+        return { result: "Failed to make a call" };
       }
     }
   } catch (error) {
@@ -88,29 +75,52 @@ export async function makePhoneCall(context, params) {
   }
 }
 
-export async function getPhoneCallTranscript(context, { callId }) {
-  context.updateStatus(`Getting a transcript for the call...`);
+async function getPhoneCallTranscript(context, { callId }) {
   const headers = {
     Authorization: API_KEY,
   };
 
   try {
-    const response = await fetch(`${BASE_URL}/logs`, {
-      method: "POST",
-      headers: {
-        ...headers,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ call_id: callId }),
-    });
+    while (true) {
+      await new Promise((resolve) =>
+        setTimeout(resolve, TRANSCRIPT_POLLING_INTERVAL)
+      );
 
-    if (response.ok) {
-      const data = await response.json();
-      return { result: data.transcripts, status: "continue" };
-    } else {
-      throw new Error(error.message || "Error fetching transcript");
+      const response = await fetch(`${BASE_URL}/logs`, {
+        method: "POST",
+        headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ call_id: callId }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.transcripts) {
+          context.updateStatus(
+            formatTranscript(data.transcripts) ||
+              "Getting a transcript for the call ..."
+          );
+        }
+        if (data.completed == true) {
+          context.updateStatus(
+            formatTranscript(data.transcripts) + "  \nPhone call completed."
+          );
+          return formatTranscript(data.transcripts);
+        }
+      }
     }
   } catch (error) {
-    return { error: error.message || "Error fetching transcript" };
+    return "Error fetching transcript";
   }
+}
+
+function formatTranscript(transcripts) {
+  let formattedTranscript = "";
+  formattedTranscript += "##### Call Transcript:  \n";
+  transcripts.forEach((transcript) => {
+    formattedTranscript += `**${transcript.user}**: ${transcript.text}  \n`;
+  });
+  return formattedTranscript;
 }
