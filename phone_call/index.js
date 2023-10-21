@@ -97,10 +97,11 @@ async function getPhoneCallTranscript(context, { callId }) {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.transcripts) {
+        if (data.transcripts.length > 0) {
+          context.updateStatus(formatTranscript(data.transcripts));
+        } else {
           context.updateStatus(
-            formatTranscript(data.transcripts) ||
-              "Getting a transcript for the call ..."
+            "Waiting for call to be answered, please wait..."
           );
         }
         if (data.completed == true) {
@@ -117,8 +118,7 @@ async function getPhoneCallTranscript(context, { callId }) {
 }
 
 function formatTranscript(transcripts) {
-  let formattedTranscript = "";
-  formattedTranscript += "##### Call Transcript:  \n";
+  let formattedTranscript = "Call transcript:  \n\n";
   transcripts.forEach((transcript) => {
     formattedTranscript += `**${transcript.user}**: ${transcript.text}  \n`;
   });
