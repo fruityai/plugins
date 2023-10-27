@@ -39,8 +39,8 @@ export async function makePhoneCall(context, params) {
     Authorization: API_KEY,
   };
 
-  params["voice_id"] = 0;
-  params["reduce_latency"] = false;
+  params["voice_id"] = 1;
+  params["reduce_latency"] = true;
   params["amd"] = true;
   if (params["request_data"]) {
     try {
